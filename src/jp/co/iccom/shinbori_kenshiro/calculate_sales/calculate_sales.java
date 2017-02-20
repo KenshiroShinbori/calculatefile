@@ -43,9 +43,9 @@ public class calculate_sales {
 
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String str;
-			// while=繰返 readline=行読込
+			
 			while ((str = br.readLine()) != null) {
-				String array[] = str.split(",");// 1行をｶﾝﾏ区切りで要素を分ける
+				String array[] = str.split(",");
 
 				if (array.length != 2) {
 					System.out.println("支店定義ﾌｧｲﾙのﾌｫｰﾏｯﾄが不正です");
@@ -80,9 +80,8 @@ public class calculate_sales {
 
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String str;
-			// while=繰返 readline=行読込
 			while ((str = br.readLine()) != null) {
-				String array[] = str.split(",");// 1行をｶﾝﾏ区切りで要素を分ける
+				String array[] = str.split(",");
 
 				if (array.length != 2) {
 					System.out.println("商品定義ﾌｧｲﾙのﾌｫｰﾏｯﾄが不正です");
@@ -124,11 +123,9 @@ public class calculate_sales {
 				int numRcdName1 = Integer.parseInt(rcdName1.substring(0, 8));
 
 				if (numRcdName1 - numRcdName != 1) {
-
 					System.out.println("売上ﾌｧｲﾙが連番になっていません");
 					return;
 				}
-
 			}
 
 			for (int i = 0; i < salesList.size(); i++) {
@@ -184,7 +181,6 @@ public class calculate_sales {
 			System.out.println("予期せぬｴﾗｰが発生しました");
 		} finally {
 
-			// System.out.println(branchAmount.entrySet());
 			List<Map.Entry<String, Long>> branchentries = new ArrayList<Map.Entry<String, Long>>(
 					branchAmount.entrySet());
 			Collections.sort(branchentries, new Comparator<Map.Entry<String, Long>>() {
@@ -216,7 +212,7 @@ public class calculate_sales {
 					commodityAmount.entrySet());
 			Collections.sort(commodityentries, new Comparator<Map.Entry<String, Long>>() {
 
-				@Override
+
 				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
 					return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
 
