@@ -25,7 +25,7 @@ public class calculate_sales {
 		try {
 
 			if (args.length != 1) {
-				System.out.println("予期せぬｴﾗｰが発生しました");
+				System.out.println("予期せぬエラーが発生しました");
 				return;
 			}
 		} finally {
@@ -37,23 +37,23 @@ public class calculate_sales {
 
 			if (file.exists()) {
 			} else {
-				System.out.println("支店定義ﾌｧｲﾙが存在しません");
+				System.out.println("支店定義ファイルが存在しません");
 				return;
 			}
 
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String str;
-			
+
 			while ((str = br.readLine()) != null) {
 				String array[] = str.split(",");
 
 				if (array.length != 2) {
-					System.out.println("支店定義ﾌｧｲﾙのﾌｫｰﾏｯﾄが不正です");
+					System.out.println("支店定義ファイルのフォーマットが不正です");
 					return;
 
 				}
 				if (!array[0].matches("^\\d{3}$")) {
-					System.out.println("支店定義ﾌｧｲﾙのﾌｫｰﾏｯﾄが不正です");
+					System.out.println("支店定義ファイルのフォーマットが不正です");
 					return;
 				}
 				branchNames.put(array[0], array[1]);
@@ -64,7 +64,7 @@ public class calculate_sales {
 			br.close();
 
 		} catch (IOException e) {
-			System.out.println("予期せぬｴﾗｰが発生しました");
+			System.out.println("予期せぬエラーが発生しました");
 		} finally {
 
 		}
@@ -74,7 +74,7 @@ public class calculate_sales {
 
 			if (file.exists()) {
 			} else {
-				System.out.println("商品定義ﾌｧｲﾙが存在しません");
+				System.out.println("商品定義ファイルが存在しません");
 				return;
 			}
 
@@ -84,13 +84,13 @@ public class calculate_sales {
 				String array[] = str.split(",");
 
 				if (array.length != 2) {
-					System.out.println("商品定義ﾌｧｲﾙのﾌｫｰﾏｯﾄが不正です");
+					System.out.println("商品定義ファイルのフォーマットが不正です");
 
 					return;
 
 				}
 				if (!array[0].matches("^[a-zA-Z0-9]{8}$")) {
-					System.out.println("商品定義ﾌｧｲﾙのﾌｫｰﾏｯﾄが不正です");
+					System.out.println("商品定義ファイルのフォーマットが不正です");
 					return;
 				}
 				commodityNames.put(array[0], array[1]);
@@ -98,7 +98,7 @@ public class calculate_sales {
 			}
 			br.close();
 		} catch (IOException e) {
-			System.out.println("予期せぬｴﾗｰが発生しました");
+			System.out.println("予期せぬエラーが発生しました");
 		} finally {
 
 		}
@@ -112,7 +112,9 @@ public class calculate_sales {
 			for (int i = 0; i < files.length; i++) {
 				if (files[i].getName().matches("^[0-9]{8}.rcd$")) {
 					salesList.add(files[i]);
-
+					if (!files[i].isFile()) {
+						System.out.println("予期せぬエラーが発生しました");
+					}
 				}
 			}
 			for (int i = 0; i < salesList.size() - 1; i++) {
@@ -123,7 +125,7 @@ public class calculate_sales {
 				int numRcdName1 = Integer.parseInt(rcdName1.substring(0, 8));
 
 				if (numRcdName1 - numRcdName != 1) {
-					System.out.println("売上ﾌｧｲﾙが連番になっていません");
+					System.out.println("売上ファイルが連番になっていません");
 					return;
 				}
 			}
@@ -140,14 +142,14 @@ public class calculate_sales {
 
 				if (branchAmount.containsKey(rcdList.get(0))) {
 				} else {
-					System.out.println(salesList.get(i).getName() + "の支店ｺｰﾄﾞが不正です。");
+					System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
 					return;
 				}
 
 				if (commodityAmount.containsKey(rcdList.get(1))) {
 
 				} else {
-					System.out.println(salesList.get(i).getName() + "の商品ｺｰﾄﾞが不正です。");
+					System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
 					return;
 				}
 
@@ -156,7 +158,7 @@ public class calculate_sales {
 					branchAmount.put(rcdList.get(0), rcdvalue);
 
 				} else {
-					System.out.println("合計金額が10桁を超えました。");
+					System.out.println("合計金額が10桁を超えました");
 					return;
 
 				}
@@ -166,19 +168,19 @@ public class calculate_sales {
 					commodityAmount.put(rcdList.get(1), rcdvalue);
 
 				} else {
-					System.out.println("合計金額が10桁を超えました。");
+					System.out.println("合計金額が10桁を超えました");
 					return;
 
 				}
 				if (rcdList.size() != 3) {
-					System.out.println(salesList.get(i).getName() + "のﾌｫｰﾏｯﾄが不正です。");
+					System.out.println(salesList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
 
 			}
 
 		} catch (IOException e) {
-			System.out.println("予期せぬｴﾗｰが発生しました");
+			System.out.println("予期せぬエラーが発生しました");
 		} finally {
 
 			List<Map.Entry<String, Long>> branchentries = new ArrayList<Map.Entry<String, Long>>(
@@ -204,14 +206,13 @@ public class calculate_sales {
 				}
 				bw.close();
 			} catch (IOException e) {
-				System.out.println("予期せぬｴﾗｰが発生しました");
+				System.out.println("予期せぬエラーが発生しました");
 			} finally {
 
 			}
 			List<Map.Entry<String, Long>> commodityentries = new ArrayList<Map.Entry<String, Long>>(
 					commodityAmount.entrySet());
 			Collections.sort(commodityentries, new Comparator<Map.Entry<String, Long>>() {
-
 
 				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
 					return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
@@ -232,7 +233,7 @@ public class calculate_sales {
 				}
 				bw.close();
 			} catch (IOException e) {
-				System.out.println("予期せぬｴﾗｰが発生しました");
+				System.out.println("予期せぬエラーが発生しました");
 			} finally {
 
 			}
