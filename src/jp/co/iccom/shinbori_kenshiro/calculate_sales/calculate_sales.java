@@ -80,7 +80,6 @@ public class calculate_sales {
 
 				if (array.length != 2) {
 					System.out.println("商品定義ファイルのフォーマットが不正です");
-
 					return;
 
 				}
@@ -142,34 +141,34 @@ public class calculate_sales {
 				try {
 					if (!rcdList.get(2).matches("^[0-9]+$")) {
 						System.out.println("予期せぬエラーが発生しました");
+						return;
+					}
+					long rcdvalue = Long.parseLong(rcdList.get(2));
+
+					if (!branchAmount.containsKey(rcdList.get(0))) {
+						System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
+						return;
+					}
+
+					if (!commodityAmount.containsKey(rcdList.get(1))) {
+						System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
+						return;
+					}
+
+					long amountvalue = rcdvalue + branchAmount.get(rcdList.get(0));
+					if (amountvalue <= 1000000000) {
+						branchAmount.put(rcdList.get(0), amountvalue);
 					} else {
-						long rcdvalue = Long.parseLong(rcdList.get(2));
+						System.out.println("合計金額が10桁を超えました");
+						return;
+					}
 
-						if (!branchAmount.containsKey(rcdList.get(0))) {
-							System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
-							return;
-						}
-
-						if (!commodityAmount.containsKey(rcdList.get(1))) {
-							System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
-							return;
-						}
-						
-						rcdvalue = rcdvalue + branchAmount.get(rcdList.get(0));
-						if (rcdvalue <= 1000000000) {
-							branchAmount.put(rcdList.get(0), rcdvalue);
-						} else {
-							System.out.println("合計金額が10桁を超えました");
-							return;
-						}
-
-						rcdvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
-						if (rcdvalue <= 1000000000) {
-							commodityAmount.put(rcdList.get(1), rcdvalue);
-						} else {
-							System.out.println("合計金額が10桁を超えました");
-							return;
-						}
+					long commodityvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
+					if (commodityvalue <= 1000000000) {
+						commodityAmount.put(rcdList.get(1), commodityvalue);
+					} else {
+						System.out.println("合計金額が10桁を超えました");
+						return;
 					}
 				} finally {
 				}
