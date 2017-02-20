@@ -22,21 +22,15 @@ public class calculate_sales {
 		HashMap<String, Long> branchAmount = new HashMap<String, Long>();
 		HashMap<String, Long> commodityAmount = new HashMap<String, Long>();
 
-		try {
-
-			if (args.length != 1) {
-				System.out.println("予期せぬエラーが発生しました");
-				return;
-			}
-		} finally {
-
+		if (args.length != 1) {
+			System.out.println("予期せぬエラーが発生しました");
+			return;
 		}
 
 		try {
 			File file = new File(args[0], "branch.lst");
 
-			if (file.exists()) {
-			} else {
+			if (!file.exists()) {
 				System.out.println("支店定義ファイルが存在しません");
 				return;
 			}
@@ -65,6 +59,8 @@ public class calculate_sales {
 
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
+			return;
+
 		} finally {
 
 		}
@@ -72,8 +68,7 @@ public class calculate_sales {
 		try {
 			File file = new File(args[0], "commodity.lst");
 
-			if (file.exists()) {
-			} else {
+			if (!file.exists()) {
 				System.out.println("商品定義ファイルが存在しません");
 				return;
 			}
@@ -99,6 +94,8 @@ public class calculate_sales {
 			br.close();
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
+			return;
+
 		} finally {
 
 		}
@@ -110,13 +107,11 @@ public class calculate_sales {
 			File[] files = file.listFiles();
 
 			for (int i = 0; i < files.length; i++) {
-				if (files[i].getName().matches("^[0-9]{8}.rcd$")) {
+				if (files[i].isFile() && files[i].getName().matches("^[0-9]{8}.rcd$")) {
 					salesList.add(files[i]);
-					if (!files[i].isFile()) {
-						System.out.println("予期せぬエラーが発生しました");
-					}
 				}
 			}
+
 			for (int i = 0; i < salesList.size() - 1; i++) {
 
 				String rcdName = new String(salesList.get(i).getName());
@@ -125,7 +120,7 @@ public class calculate_sales {
 				int numRcdName1 = Integer.parseInt(rcdName1.substring(0, 8));
 
 				if (numRcdName1 - numRcdName != 1) {
-					System.out.println("売上ファイルが連番になっていません");
+					System.out.println("売上ファイル名が連番になっていません");
 					return;
 				}
 			}
@@ -138,107 +133,114 @@ public class calculate_sales {
 				while ((str = br.readLine()) != null) {
 					rcdList.add(str);
 				}
-				long rcdvalue = Long.parseLong(rcdList.get(2));
 
-				if (branchAmount.containsKey(rcdList.get(0))) {
-				} else {
-					System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
-					return;
-				}
-
-				if (commodityAmount.containsKey(rcdList.get(1))) {
-
-				} else {
-					System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
-					return;
-				}
-
-				rcdvalue = rcdvalue + branchAmount.get(rcdList.get(0));
-				if (rcdvalue <= 1000000000) {
-					branchAmount.put(rcdList.get(0), rcdvalue);
-
-				} else {
-					System.out.println("合計金額が10桁を超えました");
-					return;
-
-				}
-
-				rcdvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
-				if (rcdvalue <= 1000000000) {
-					commodityAmount.put(rcdList.get(1), rcdvalue);
-
-				} else {
-					System.out.println("合計金額が10桁を超えました");
-					return;
-
-				}
 				if (rcdList.size() != 3) {
 					System.out.println(salesList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
 
+				try {
+					if (!rcdList.get(2).matches("^[0-9]+$")) {
+						System.out.println("予期せぬエラーが発生しました");
+					} else {
+						long rcdvalue = Long.parseLong(rcdList.get(2));
+
+						if (!branchAmount.containsKey(rcdList.get(0))) {
+							System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
+							return;
+						}
+
+						if (!commodityAmount.containsKey(rcdList.get(1))) {
+							System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
+							return;
+						}
+						
+						rcdvalue = rcdvalue + branchAmount.get(rcdList.get(0));
+						if (rcdvalue <= 1000000000) {
+							branchAmount.put(rcdList.get(0), rcdvalue);
+						} else {
+							System.out.println("合計金額が10桁を超えました");
+							return;
+						}
+
+						rcdvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
+						if (rcdvalue <= 1000000000) {
+							commodityAmount.put(rcdList.get(1), rcdvalue);
+						} else {
+							System.out.println("合計金額が10桁を超えました");
+							return;
+						}
+					}
+				} finally {
+				}
 			}
 
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
+			return;
+
 		} finally {
 
-			List<Map.Entry<String, Long>> branchentries = new ArrayList<Map.Entry<String, Long>>(
-					branchAmount.entrySet());
-			Collections.sort(branchentries, new Comparator<Map.Entry<String, Long>>() {
+		}
 
-				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
-					return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
-				}
-			});
+		List<Map.Entry<String, Long>> branchentries = new ArrayList<Map.Entry<String, Long>>(branchAmount.entrySet());
+		Collections.sort(branchentries, new Comparator<Map.Entry<String, Long>>() {
 
-			try {
-				File branchOutFile = new File(args[0], "branch.out");
-				FileWriter fw = new FileWriter(branchOutFile);
-				BufferedWriter bw = new BufferedWriter(fw);
+			public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+				return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
+			}
+		});
 
-				for (Entry<String, Long> s : branchentries) {
+		try {
+			File branchOutFile = new File(args[0], "branch.out");
+			FileWriter fw = new FileWriter(branchOutFile);
+			BufferedWriter bw = new BufferedWriter(fw);
 
-					final String separator = System.getProperty("line.separator");
+			for (Entry<String, Long> s : branchentries) {
 
-					bw.write(s.getKey() + "," + branchNames.get(s.getKey()) + "," + s.getValue() + separator);
+				final String separator = System.getProperty("line.separator");
 
-				}
-				bw.close();
-			} catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました");
-			} finally {
+				bw.write(s.getKey() + "," + branchNames.get(s.getKey()) + "," + s.getValue() + separator);
 
 			}
-			List<Map.Entry<String, Long>> commodityentries = new ArrayList<Map.Entry<String, Long>>(
-					commodityAmount.entrySet());
-			Collections.sort(commodityentries, new Comparator<Map.Entry<String, Long>>() {
+			bw.close();
+		} catch (IOException e) {
+			System.out.println("予期せぬエラーが発生しました");
+			return;
 
-				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
-					return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
-
-				}
-			});
-
-			try {
-				File commodityOutFile = new File(args[0], "commodity.out");
-				FileWriter fw = new FileWriter(commodityOutFile);
-				BufferedWriter bw = new BufferedWriter(fw);
-				for (Entry<String, Long> s : commodityentries) {
-
-					final String separator = System.getProperty("line.separator");
-
-					bw.write(s.getKey() + "," + commodityNames.get(s.getKey()) + "," + s.getValue() + separator);
-
-				}
-				bw.close();
-			} catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました");
-			} finally {
-
-			}
+		} finally {
 
 		}
+		List<Map.Entry<String, Long>> commodityentries = new ArrayList<Map.Entry<String, Long>>(
+				commodityAmount.entrySet());
+		Collections.sort(commodityentries, new Comparator<Map.Entry<String, Long>>() {
+
+			public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+				return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
+
+			}
+		});
+
+		try {
+			File commodityOutFile = new File(args[0], "commodity.out");
+			FileWriter fw = new FileWriter(commodityOutFile);
+			BufferedWriter bw = new BufferedWriter(fw);
+			for (Entry<String, Long> s : commodityentries) {
+
+				final String separator = System.getProperty("line.separator");
+
+				bw.write(s.getKey() + "," + commodityNames.get(s.getKey()) + "," + s.getValue() + separator);
+
+			}
+			bw.close();
+		} catch (IOException e) {
+			System.out.println("予期せぬエラーが発生しました");
+			return;
+
+		} finally {
+
+		}
+
 	}
 
 }
