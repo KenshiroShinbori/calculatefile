@@ -26,16 +26,21 @@ public class calculate_sales {
 			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
-		
-		input(args[0],"branch.lst" ,branchNames ,branchAmount,"^\\d{3}$");
-		input(args[0],"commodity.lst" ,commodityNames ,commodityAmount ,"^[a-zA-Z0-9]{8}$");
-		
+
+		if (!input(args[0], "branch.lst", branchNames, branchAmount, "^\\d{3}$", "支店定義ファイルが存在しません",
+				"支店定義ファイルのフォーマットが不正です")) {
+			return;
+		}
+		if (!input(args[0], "commodity.lst", commodityNames, commodityAmount, "^[a-zA-Z0-9]{8}$", "商品定義ファイルが存在しません",
+				"商品定義ファイルのフォーマットが不正です")) {
+			return;
+		}
+
 		try {
 			ArrayList<File> salesList = new ArrayList<File>();
 
 			File file = new File(args[0]);
-			File[] files = file.
-					listFiles();
+			File[] files = file.listFiles();
 
 			for (int i = 0; i < files.length; i++) {
 				if (files[i].isFile() && files[i].getName().matches("^[0-9]{8}.rcd$")) {
@@ -103,6 +108,7 @@ public class calculate_sales {
 						return;
 					}
 				} finally {
+					br.close();
 				}
 			}
 
@@ -113,18 +119,18 @@ public class calculate_sales {
 		} finally {
 
 		}
-		
-		
-		output(args[0] ,"branch.out" ,branchNames , branchAmount );
-		output(args[0] ,"commodity.out" ,commodityNames ,commodityAmount);
-		
-		
+
+		if (!output(args[0], "branch.out", branchNames, branchAmount)) {
+			return;
+		}
+
+		if (!output(args[0], "commodity.out", commodityNames, commodityAmount)) {
+			return;
+		}
 	}
 
-
-
-	public static boolean output(String path ,String fileName ,HashMap<String,String> mapNames ,HashMap<String,Long> mapAmount){
-
+	public static boolean output(String path, String fileName, HashMap<String, String> mapNames,
+			HashMap<String, Long> mapAmount) {
 
 		List<Map.Entry<String, Long>> entries = new ArrayList<Map.Entry<String, Long>>(mapAmount.entrySet());
 		Collections.sort(entries, new Comparator<Map.Entry<String, Long>>() {
@@ -134,42 +140,40 @@ public class calculate_sales {
 			}
 		});
 
-		BufferedWriter bw =null;
+		BufferedWriter bw = null;
 		try {
 			File file = new File(path, fileName);
 			FileWriter fw = new FileWriter(file);
 			bw = new BufferedWriter(fw);
 
 			for (Entry<String, Long> s : entries) {
-				bw.write(s.getKey() + "," + mapNames.get(s.getKey()) + "," + s.getValue() + System.getProperty("line.separator"));
+				bw.write(s.getKey() + "," + mapNames.get(s.getKey()) + "," + s.getValue()
+						+ System.getProperty("line.separator"));
 			}
-			
+
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
 			return false;
-		}finally{
-			try{
-				if(bw !=null){
+		} finally {
+			try {
+				if (bw != null) {
 					bw.close();
 				}
 			} catch (IOException e) {
-					e.printStackTrace();
 			}
 		}
 		return true;
 	}
-	
-	
-	
-	public static boolean input(String path ,String fileName ,HashMap<String,String> mapNames ,HashMap<String,Long> mapAmount ,String word){
-		
-		
+
+	public static boolean input(String path, String fileName, HashMap<String, String> mapNames,
+			HashMap<String, Long> mapAmount, String word, String existsError, String formatError) {
+
 		BufferedReader br = null;
 		try {
 			File file = new File(path, fileName);
 
 			if (!file.exists()) {
-				System.out.println("支店定義ファイルが存在しません");
+				System.out.println(existsError);
 				return false;
 			}
 			br = new BufferedReader(new FileReader(file));
@@ -179,33 +183,32 @@ public class calculate_sales {
 				String array[] = str.split(",");
 
 				if (array.length != 2) {
-					System.out.println("支店定義ファイルのフォーマットが不正です");
+					System.out.println(formatError);
 					return false;
 
 				}
 				if (!array[0].matches(word)) {
-					System.out.println("支店定義ファイルのフォーマットが不正です");
+					System.out.println(formatError);
 					return false;
 				}
 				mapNames.put(array[0], array[1]);
 				mapAmount.put(array[0], 0L);
 			}
-			
+
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
 			return false;
 
-			} finally {
-				try{
-					if(br !=null){
-						br.close();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+		} finally {
+			try {
+				if (br != null) {
+					br.close();
 				}
+			} catch (IOException e) {
 			}
+		}
 		return true;
-		
+
 	}
 
 }
