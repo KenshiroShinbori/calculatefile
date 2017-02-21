@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class calculate_sales {
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
 		HashMap<String, String> branchNames = new HashMap<String, String>();
 		HashMap<String, String> commodityNames = new HashMap<String, String>();
 		HashMap<String, Long> branchAmount = new HashMap<String, Long>();
@@ -36,88 +36,90 @@ public class calculate_sales {
 			return;
 		}
 
-		try {
-			ArrayList<File> salesList = new ArrayList<File>();
+		ArrayList<File> salesList = new ArrayList<File>();
 
-			File file = new File(args[0]);
-			File[] files = file.listFiles();
+		File file = new File(args[0]);
+		File[] files = file.listFiles();
 
-			for (int i = 0; i < files.length; i++) {
-				if (files[i].isFile() && files[i].getName().matches("^[0-9]{8}.rcd$")) {
-					salesList.add(files[i]);
-				}
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isFile() && files[i].getName().matches("^[0-9]{8}.rcd$")) {
+				salesList.add(files[i]);
 			}
+		}
 
-			for (int i = 0; i < salesList.size() - 1; i++) {
+		for (int i = 0; i < salesList.size() - 1; i++) {
 
-				String rcdName = new String(salesList.get(i).getName());
-				int numRcdName = Integer.parseInt(rcdName.substring(0, 8));
-				String rcdName1 = new String(salesList.get(i + 1).getName());
-				int numRcdName1 = Integer.parseInt(rcdName1.substring(0, 8));
+			String rcdName = new String(salesList.get(i).getName());
+			int numRcdName = Integer.parseInt(rcdName.substring(0, 8));
+			String rcdName1 = new String(salesList.get(i + 1).getName());
+			int numRcdName1 = Integer.parseInt(rcdName1.substring(0, 8));
 
-				if (numRcdName1 - numRcdName != 1) {
-					System.out.println("売上ファイル名が連番になっていません");
-					return;
-				}
+			if (numRcdName1 - numRcdName != 1) {
+				System.out.println("売上ファイル名が連番になっていません");
+				return;
 			}
+		}
 
-			for (int i = 0; i < salesList.size(); i++) {
-				ArrayList<String> rcdList = new ArrayList<String>();
+		BufferedReader br = null;
+		for (int i = 0; i < salesList.size(); i++) {
+			ArrayList<String> rcdList = new ArrayList<String>();
 
-				BufferedReader br = new BufferedReader(new FileReader(salesList.get(i)));
-				String str;
+			br = new BufferedReader(new FileReader(salesList.get(i)));
+			String str;
+			try {
 				while ((str = br.readLine()) != null) {
 					rcdList.add(str);
 				}
+			} catch (IOException e) {
+				System.out.println("予期せぬエラーが発生しました");
+			} finally {
+				try {
+					if (br != null) {
+						br.close();
+					}
+				} catch (IOException e) {
+					System.out.println("予期せぬエラーが発生しました");
+				}
+			}
 
+			try {
 				if (rcdList.size() != 3) {
 					System.out.println(salesList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
-
-				try {
-					if (!rcdList.get(2).matches("^[0-9]+$")) {
-						System.out.println("予期せぬエラーが発生しました");
-						return;
-					}
-					long rcdvalue = Long.parseLong(rcdList.get(2));
-
-					if (!branchAmount.containsKey(rcdList.get(0))) {
-						System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
-						return;
-					}
-
-					if (!commodityAmount.containsKey(rcdList.get(1))) {
-						System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
-						return;
-					}
-
-					long amountvalue = rcdvalue + branchAmount.get(rcdList.get(0));
-					if (amountvalue <= 1000000000) {
-						branchAmount.put(rcdList.get(0), amountvalue);
-					} else {
-						System.out.println("合計金額が10桁を超えました");
-						return;
-					}
-
-					long commodityvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
-					if (commodityvalue <= 1000000000) {
-						commodityAmount.put(rcdList.get(1), commodityvalue);
-					} else {
-						System.out.println("合計金額が10桁を超えました");
-						return;
-					}
-				} finally {
-					br.close();
+				if (!rcdList.get(2).matches("^[0-9]+$")) {
+					System.out.println("予期せぬエラーが発生しました");
+					return;
 				}
+				long rcdvalue = Long.parseLong(rcdList.get(2));
+
+				if (!branchAmount.containsKey(rcdList.get(0))) {
+					System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
+					return;
+				}
+
+				if (!commodityAmount.containsKey(rcdList.get(1))) {
+					System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
+					return;
+				}
+
+				long amountvalue = rcdvalue + branchAmount.get(rcdList.get(0));
+				if (amountvalue <= 1000000000) {
+					branchAmount.put(rcdList.get(0), amountvalue);
+				} else {
+					System.out.println("合計金額が10桁を超えました");
+					return;
+				}
+
+				long commodityvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
+				if (commodityvalue <= 1000000000) {
+					commodityAmount.put(rcdList.get(1), commodityvalue);
+				} else {
+					System.out.println("合計金額が10桁を超えました");
+					return;
+				}
+			} finally {
 			}
-
-		} catch (IOException e) {
-			System.out.println("予期せぬエラーが発生しました");
-			return;
-
-		} finally {
-
 		}
 
 		if (!output(args[0], "branch.out", branchNames, branchAmount)) {
@@ -160,6 +162,7 @@ public class calculate_sales {
 					bw.close();
 				}
 			} catch (IOException e) {
+				System.out.println("予期せぬエラーが発生しました");
 			}
 		}
 		return true;
@@ -205,6 +208,7 @@ public class calculate_sales {
 					br.close();
 				}
 			} catch (IOException e) {
+				System.out.println("予期せぬエラーが発生しました");
 			}
 		}
 		return true;
