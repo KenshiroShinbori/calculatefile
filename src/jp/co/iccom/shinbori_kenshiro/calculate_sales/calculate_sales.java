@@ -70,6 +70,7 @@ public class calculate_sales {
 				}
 			} catch (IOException e) {
 				System.out.println("予期せぬエラーが発生しました");
+				return;
 			} finally {
 				try {
 					if (br != null) {
@@ -77,6 +78,7 @@ public class calculate_sales {
 					}
 				} catch (IOException e) {
 					System.out.println("予期せぬエラーが発生しました");
+					return;
 				}
 			}
 
