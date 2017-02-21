@@ -27,12 +27,10 @@ public class calculate_sales {
 			return;
 		}
 
-		if (!input(args[0], "branch.lst", branchNames, branchAmount, "^\\d{3}$", "支店定義ファイルが存在しません",
-				"支店定義ファイルのフォーマットが不正です")) {
+		if (!input(args[0], "branch.lst", branchNames, branchAmount, "^\\d{3}$", "支店")) {
 			return;
 		}
-		if (!input(args[0], "commodity.lst", commodityNames, commodityAmount, "^[a-zA-Z0-9]{8}$", "商品定義ファイルが存在しません",
-				"商品定義ファイルのフォーマットが不正です")) {
+		if (!input(args[0], "commodity.lst", commodityNames, commodityAmount, "^[a-zA-Z0-9]{8}$", "商品")) {
 			return;
 		}
 
@@ -82,43 +80,40 @@ public class calculate_sales {
 				}
 			}
 
-			try {
-				if (rcdList.size() != 3) {
-					System.out.println(salesList.get(i).getName() + "のフォーマットが不正です");
-					return;
-				}
-				if (!rcdList.get(2).matches("^[0-9]+$")) {
-					System.out.println("予期せぬエラーが発生しました");
-					return;
-				}
-				long rcdvalue = Long.parseLong(rcdList.get(2));
+			if (rcdList.size() != 3) {
+				System.out.println(salesList.get(i).getName() + "のフォーマットが不正です");
+				return;
+			}
+			if (!rcdList.get(2).matches("^[0-9]+$")) {
+				System.out.println("予期せぬエラーが発生しました");
+				return;
+			}
+			long rcdvalue = Long.parseLong(rcdList.get(2));
 
-				if (!branchAmount.containsKey(rcdList.get(0))) {
-					System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
-					return;
-				}
+			if (!branchAmount.containsKey(rcdList.get(0))) {
+				System.out.println(salesList.get(i).getName() + "の支店コードが不正です");
+				return;
+			}
 
-				if (!commodityAmount.containsKey(rcdList.get(1))) {
-					System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
-					return;
-				}
+			if (!commodityAmount.containsKey(rcdList.get(1))) {
+				System.out.println(salesList.get(i).getName() + "の商品コードが不正です");
+				return;
+			}
 
-				long amountvalue = rcdvalue + branchAmount.get(rcdList.get(0));
-				if (amountvalue <= 1000000000) {
-					branchAmount.put(rcdList.get(0), amountvalue);
-				} else {
-					System.out.println("合計金額が10桁を超えました");
-					return;
-				}
+			long amountvalue = rcdvalue + branchAmount.get(rcdList.get(0));
+			if (amountvalue <= 999999999) {
+				branchAmount.put(rcdList.get(0), amountvalue);
+			} else {
+				System.out.println("合計金額が10桁を超えました");
+				return;
+			}
 
-				long commodityvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
-				if (commodityvalue <= 1000000000) {
-					commodityAmount.put(rcdList.get(1), commodityvalue);
-				} else {
-					System.out.println("合計金額が10桁を超えました");
-					return;
-				}
-			} finally {
+			long commodityvalue = rcdvalue + commodityAmount.get(rcdList.get(1));
+			if (commodityvalue <= 999999999) {
+				commodityAmount.put(rcdList.get(1), commodityvalue);
+			} else {
+				System.out.println("合計金額が10桁を超えました");
+				return;
 			}
 		}
 
@@ -163,20 +158,21 @@ public class calculate_sales {
 				}
 			} catch (IOException e) {
 				System.out.println("予期せぬエラーが発生しました");
+				return false;
 			}
 		}
 		return true;
 	}
 
 	public static boolean input(String path, String fileName, HashMap<String, String> mapNames,
-			HashMap<String, Long> mapAmount, String word, String existsError, String formatError) {
+			HashMap<String, Long> mapAmount, String word, String Error) {
 
 		BufferedReader br = null;
 		try {
 			File file = new File(path, fileName);
 
 			if (!file.exists()) {
-				System.out.println(existsError);
+				System.out.println(Error + "定義ファイルが存在しません");
 				return false;
 			}
 			br = new BufferedReader(new FileReader(file));
@@ -186,12 +182,12 @@ public class calculate_sales {
 				String array[] = str.split(",");
 
 				if (array.length != 2) {
-					System.out.println(formatError);
+					System.out.println(Error + "定義ファイルのフォーマットが不正です");
 					return false;
 
 				}
 				if (!array[0].matches(word)) {
-					System.out.println(formatError);
+					System.out.println(Error + "定義ファイルのフォーマットが不正です");
 					return false;
 				}
 				mapNames.put(array[0], array[1]);
@@ -209,6 +205,7 @@ public class calculate_sales {
 				}
 			} catch (IOException e) {
 				System.out.println("予期せぬエラーが発生しました");
+				return false;
 			}
 		}
 		return true;
