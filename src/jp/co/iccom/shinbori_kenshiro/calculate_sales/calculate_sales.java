@@ -26,84 +26,16 @@ public class calculate_sales {
 			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
-
-		try {
-			File file = new File(args[0], "branch.lst");
-
-			if (!file.exists()) {
-				System.out.println("支店定義ファイルが存在しません");
-				return;
-			}
-
-			BufferedReader br = new BufferedReader(new FileReader(file));
-			String str;
-
-			while ((str = br.readLine()) != null) {
-				String array[] = str.split(",");
-
-				if (array.length != 2) {
-					System.out.println("支店定義ファイルのフォーマットが不正です");
-					return;
-
-				}
-				if (!array[0].matches("^\\d{3}$")) {
-					System.out.println("支店定義ファイルのフォーマットが不正です");
-					return;
-				}
-				branchNames.put(array[0], array[1]);
-				branchAmount.put(array[0], 0L);
-
-			}
-
-			br.close();
-
-		} catch (IOException e) {
-			System.out.println("予期せぬエラーが発生しました");
-			return;
-
-		} finally {
-
-		}
-
-		try {
-			File file = new File(args[0], "commodity.lst");
-
-			if (!file.exists()) {
-				System.out.println("商品定義ファイルが存在しません");
-				return;
-			}
-
-			BufferedReader br = new BufferedReader(new FileReader(file));
-			String str;
-			while ((str = br.readLine()) != null) {
-				String array[] = str.split(",");
-
-				if (array.length != 2) {
-					System.out.println("商品定義ファイルのフォーマットが不正です");
-					return;
-
-				}
-				if (!array[0].matches("^[a-zA-Z0-9]{8}$")) {
-					System.out.println("商品定義ファイルのフォーマットが不正です");
-					return;
-				}
-				commodityNames.put(array[0], array[1]);
-				commodityAmount.put(array[0], 0L);
-			}
-			br.close();
-		} catch (IOException e) {
-			System.out.println("予期せぬエラーが発生しました");
-			return;
-
-		} finally {
-
-		}
-
+		
+		input(args[0],"branch.lst" ,branchNames ,branchAmount,"^\\d{3}$");
+		input(args[0],"commodity.lst" ,commodityNames ,commodityAmount ,"^[a-zA-Z0-9]{8}$");
+		
 		try {
 			ArrayList<File> salesList = new ArrayList<File>();
 
 			File file = new File(args[0]);
-			File[] files = file.listFiles();
+			File[] files = file.
+					listFiles();
 
 			for (int i = 0; i < files.length; i++) {
 				if (files[i].isFile() && files[i].getName().matches("^[0-9]{8}.rcd$")) {
@@ -181,65 +113,99 @@ public class calculate_sales {
 		} finally {
 
 		}
+		
+		
+		output(args[0] ,"branch.out" ,branchNames , branchAmount );
+		output(args[0] ,"commodity.out" ,commodityNames ,commodityAmount);
+		
+		
+	}
 
-		List<Map.Entry<String, Long>> branchentries = new ArrayList<Map.Entry<String, Long>>(branchAmount.entrySet());
-		Collections.sort(branchentries, new Comparator<Map.Entry<String, Long>>() {
+
+
+	public static boolean output(String path ,String fileName ,HashMap<String,String> mapNames ,HashMap<String,Long> mapAmount){
+
+
+		List<Map.Entry<String, Long>> entries = new ArrayList<Map.Entry<String, Long>>(mapAmount.entrySet());
+		Collections.sort(entries, new Comparator<Map.Entry<String, Long>>() {
 
 			public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
 				return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
 			}
 		});
 
+		BufferedWriter bw =null;
 		try {
-			File branchOutFile = new File(args[0], "branch.out");
-			FileWriter fw = new FileWriter(branchOutFile);
-			BufferedWriter bw = new BufferedWriter(fw);
+			File file = new File(path, fileName);
+			FileWriter fw = new FileWriter(file);
+			bw = new BufferedWriter(fw);
 
-			for (Entry<String, Long> s : branchentries) {
-
-				final String separator = System.getProperty("line.separator");
-
-				bw.write(s.getKey() + "," + branchNames.get(s.getKey()) + "," + s.getValue() + separator);
-
+			for (Entry<String, Long> s : entries) {
+				bw.write(s.getKey() + "," + mapNames.get(s.getKey()) + "," + s.getValue() + System.getProperty("line.separator"));
 			}
-			bw.close();
+			
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
-			return;
-
-		} finally {
-
+			return false;
+		}finally{
+			try{
+				if(bw !=null){
+					bw.close();
+				}
+			} catch (IOException e) {
+					e.printStackTrace();
+			}
 		}
-		List<Map.Entry<String, Long>> commodityentries = new ArrayList<Map.Entry<String, Long>>(
-				commodityAmount.entrySet());
-		Collections.sort(commodityentries, new Comparator<Map.Entry<String, Long>>() {
-
-			public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
-				return ((Long) o2.getValue()).compareTo((Long) o1.getValue());
-
-			}
-		});
-
+		return true;
+	}
+	
+	
+	
+	public static boolean input(String path ,String fileName ,HashMap<String,String> mapNames ,HashMap<String,Long> mapAmount ,String word){
+		
+		
+		BufferedReader br = null;
 		try {
-			File commodityOutFile = new File(args[0], "commodity.out");
-			FileWriter fw = new FileWriter(commodityOutFile);
-			BufferedWriter bw = new BufferedWriter(fw);
-			for (Entry<String, Long> s : commodityentries) {
+			File file = new File(path, fileName);
 
-				final String separator = System.getProperty("line.separator");
-
-				bw.write(s.getKey() + "," + commodityNames.get(s.getKey()) + "," + s.getValue() + separator);
-
+			if (!file.exists()) {
+				System.out.println("支店定義ファイルが存在しません");
+				return false;
 			}
-			bw.close();
+			br = new BufferedReader(new FileReader(file));
+			String str;
+
+			while ((str = br.readLine()) != null) {
+				String array[] = str.split(",");
+
+				if (array.length != 2) {
+					System.out.println("支店定義ファイルのフォーマットが不正です");
+					return false;
+
+				}
+				if (!array[0].matches(word)) {
+					System.out.println("支店定義ファイルのフォーマットが不正です");
+					return false;
+				}
+				mapNames.put(array[0], array[1]);
+				mapAmount.put(array[0], 0L);
+			}
+			
 		} catch (IOException e) {
 			System.out.println("予期せぬエラーが発生しました");
-			return;
+			return false;
 
-		} finally {
-
-		}
-
+			} finally {
+				try{
+					if(br !=null){
+						br.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		return true;
+		
 	}
 
 }
